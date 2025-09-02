@@ -117,6 +117,8 @@ class TransactionObserver
             if($operation === 'subtract'){
                 $monthlyPlanOriginal->amount_now -= $amountDifference;
                 $monthlyPlanOriginal->amount_now = max(0, $monthlyPlanOriginal->amount_now);
+            }else if ($operation === 'delete'){
+                $monthlyPlanOriginal->amount_now += (int)$amountDifference;
             }
         $monthlyPlanOriginal->save();
         }

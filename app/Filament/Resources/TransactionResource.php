@@ -136,17 +136,12 @@ class TransactionResource extends Resource
                     }),
                     
             ])->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->visible(fn($record)=> $record->type !== 'hutang' && $record->categories_id != 8 || $record->categories_id != 9  ),
+                Tables\Actions\DeleteAction::make()->visible(fn($record)=> $record->type !== 'hutang'  ),
             ])->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ])
+
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()->label('Tambah Data Cashflow')
                     ->
@@ -166,8 +161,6 @@ class TransactionResource extends Resource
     {
         return [
             'index' => Pages\ListTransactions::route('/'),
-            'create' => Pages\CreateTransaction::route('/create'),
-            'edit' => Pages\EditTransaction::route('/{record}/edit'),
         ];
     }
 }

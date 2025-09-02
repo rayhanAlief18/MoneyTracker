@@ -22,7 +22,7 @@ class DebtObserver
             'categories_id'=> 8, //hutang masuk,
             'amount' => $debtRecord->amount,
             'date' => Carbon::now(),
-            'note' => 'Anda hutang kepada '.$debtRecord->nama_pemberi_hutang.' sebesar Rp '.$debtRecord->amount,
+            'note' => 'Penerimaan hutang dari '.$debtRecord->nama_pemberi_hutang.' sebesar Rp '.$debtRecord->amount,
             'money_placing_id' => $debtRecord->money_placing_id,
         ]);
 

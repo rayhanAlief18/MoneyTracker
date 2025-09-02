@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\DebtRequestResource\Pages;
 use App\Filament\Resources\DebtRequestResource\RelationManagers;
+use App\Models\debtRecord;
 use App\Models\debtRequestModel as DebtRequest;
 use App\Models\MoneyPlacingModel as MoneyPlacing;
 use App\Models\transactionModel as Transaction;
@@ -29,7 +30,7 @@ class DebtRequestResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('debtor_user_id', auth()->id())->orWhere('creditor_user_id', auth()->id());
+        return parent::getEloquentQuery()->where('creditor_user_id', auth()->id());
     }
 
     public static function form(Form $form): Form
@@ -48,13 +49,9 @@ class DebtRequestResource extends Resource
                     ->label('Debitur (Peminjam)')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('creditor.name')
-                    ->label('Kreditor (Pemberi Pinjaman)')
-                    ->searchable(),
-
                 Tables\Columns\TextColumn::make('debtRecord.amount')
                     ->label('Jumlah')
-                    ->prefix('Rp')
+                    ->money('IDR', true)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('debt_date')
@@ -91,7 +88,7 @@ class DebtRequestResource extends Resource
                             return $bulan;
                         })
                 ])->actions([
-                    // Tables\Actions\ViewAction::make(),
+                    Tables\Actions\ViewAction::make(),
                 ])->bulkActions([
                     // Tables\Actions\BulkActionGroup::make([
                     //     Tables\Actions\DeleteBulkAction::make(),
@@ -115,46 +112,103 @@ class DebtRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->form([
-                        Forms\Components\Select::make('money_placing_id')
-                            ->label('Pilih Alokasi Keuangan')
-                            ->options(MoneyPlacing::pluck('name', 'id'))
-                            ->searchable()
-                            ->required(),
-                    ])
+                    ->action(fn($record) => $record->update(['status' => 'approved']))
+
+                    ->form(function ($record) {
+                        return [
+                            Forms\Components\Select::make('money_placing_id')
+                                ->label('Pilih Alokasi Keuangan yang akan diambil')
+                                ->options(function () use ($record) {
+                                    return MoneyPlacing::where('user_id', auth()->id())
+                                        ->where('amount', '>=', $record->debtRecord->amount)
+                                        ->pluck('name', 'id');
+                                })
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, $set) use ($record) {
+                                    if (! $state) {
+                                        $set('sisa_saldo', 'Rp. 0');
+                                        return;
+                                    }
+                    
+                                    $moneyPlacing = MoneyPlacing::find($state);
+                    
+                                    if (! $moneyPlacing) {
+                                        $set('sisa_saldo', 'Rp. 0');
+                                        return;
+                                    }
+                                    
+                                    //moneyplacing dikurang dari sini
+                                    $sisa = $moneyPlacing->amount - $record->debtRecord->amount;
+                    
+                                    $set('sisa_saldo', 'Rp ' . number_format(max($sisa, 0), 0, ',', '.'));
+                                })
+                                ->required(),
+                            
+                                // Tampilkan Sisa jika menghutangi, Saldo Berdasarkan Alokasi yang Dipilih
+                            Forms\Components\TextInput::make('sisa_saldo')
+                                ->label('Sisa Saldo Setelah Transaksi')
+                                ->disabled()
+                                ->dehydrated(false),
+                        ];
+                    })
+                    
                     ->action(function ($record, array $data) {
-                        // Perbarui status permintaan menjadi 'approved'
                         $moneyPlacing = MoneyPlacing::find($data['money_placing_id']);
                         if ($moneyPlacing) {
-                            // Buat catatan pengeluaran baru
+                            // Buat catatan pengeluaran untuk yang menghutangi
                             Transaction::create([
                                 'user_id' => auth()->id(),
                                 'money_placing_id' => $moneyPlacing->id,
                                 'amount' => $record->debtRecord->amount,
+                                'categories_id' => 9, //hutang keluar,
                                 'type' => 'pengeluaran',
-                                'note' => 'Pemberian hutang kepada ' . $record->creditor->name,
+                                'note' => 'Pemberian hutang kepada ' . $record->creditor->name.' sebesar Rp ' . number_format($record->debtRecord->amount, 0, ',', '.'),
                                 'date' => Carbon::now(),
                             ]);
-
-                            //     // Kurangi Money Placing yang dipilih
-                            $moneyPlacing->decrement('amount', $record->amount);
+                            
 
                             Notification::make()
                                 ->title('Permintaan hutang disetujui dan catatan pengeluaran telah dibuat.')
                                 ->success()
                                 ->send();
                         }
+                        
+                        // Perbarui status permintaan menjadi 'approved'
                         $record->update(['status' => 'approved']);
+                        
+                        // buat catatan pemasukan untuk penghutang
+                        if ($record->status === 'approved' && $record->creditor_user_id === auth()->id()){
 
-                        // if ($record->status === 'approved' && $record->creditor_user_id === auth()->id()){
-                            // loakukan penambahan pada money placing user pemberi pinjaman
-                        // })
+                            
+                            Transaction::create([
+                                'user_id' => $record->debtor_user_id,
+                                'type' => 'hutang',
+                                'categories_id' => 8, //hutang masuk,
+                                'amount' => $record->debtRecord->amount,
+                                'date' => Carbon::now(),
+                                'note' => 'Penerimaan hutang dari ' . $record->debtor->name. ' sebesar Rp '. number_format($record->debtRecord->amount, 0, ',', '.'),
+                                'money_placing_id' => $record->debtRecord->money_placing_id,
+                            ]);
+
+                            $moneyPlacing = MoneyPlacing::find($record->debtRecord->money_placing_id);
+                            if ($moneyPlacing) {
+                                $moneyPlacing->increment('amount', $record->debtRecord->amount);
+                            }
+                            
+                            if(auth()->id() === $record->debtor_user_id){
+                                Notification::make()
+                                ->title('Permintaan hutang dari '. $record->debtor->name.' disetujui dan catatan pemasukan telah dibuat.')
+                                ->success()
+                                ->send();    
+                            }
+                        }
 
                     })
-                    ->visible(fn($record)=>$record->status==='pending' && $record->creditor_user_id === auth()->id())
                     ->modalHeading('Konfirmasi Persetujuan')
                     ->modalSubheading('Apakah anda yakin menyetujui permintaan ini?')
-                    ->modalButton('Ya, Setujui'),
+                    ->modalButton('Ya, Setujui')
+                    ->visible(fn($record)=>$record->status==='pending')
+                    ,
 
                 Action::make('Tolak')
                     ->label('Tolak')
@@ -164,8 +218,14 @@ class DebtRequestResource extends Resource
                     ->modalHeading('Konfirmasi Penolakan')
                     ->modalSubheading('Apakah anda yakin menolak permintaan ini?')
                     ->modalButton('Ya, Setujui')
-                    ->visible(fn($record)=>$record->status==='pending' && $record->creditor_user_id === auth()->id())
-                    ->action(fn($record) => $record->update(['status' => 'rejected'])),
+                    ->action(fn($record) => $record->update(['status' => 'rejected']))
+                    ->visible(fn($record)=>$record->status==='pending')
+                    ->after(function ($record) {
+                        Notification::make()
+                            ->title('Permintaan hutang berhasil ditolak.')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 // Tables\Actions\BulkActionGroup::make([

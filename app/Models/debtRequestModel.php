@@ -26,10 +26,12 @@ class debtRequestModel extends Model
         'due_date' => 'date',
     ];
 
+    //penghutang
     public function debtor(){
         return $this->belongsTo(User::class, 'debtor_user_id', 'id');
     }
 
+    // pemberi hutang
     public function creditor(){
         return $this->belongsTo(User::class, 'creditor_user_id', 'id');
     }
