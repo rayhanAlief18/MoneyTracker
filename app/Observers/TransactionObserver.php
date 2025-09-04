@@ -13,6 +13,9 @@ class TransactionObserver
      */
     public function created(transactionModel $transaction): void
     {
+        //note bagian money placing sudah di handle di model transactionModel
+        
+        // akan mempengaruhi monthly plan
         $this->updateMonthlyPlan($transaction, 'created');
     }
 
@@ -39,27 +42,42 @@ class TransactionObserver
 
         $categoryChange = $originalCategoryId !== $newCategoryId;
         $createdAtChange = $originalMonthName !== $newMonthName || $originalYear !== $newYear;
+        $amountChange = $originalAmount !== $newAmount;
         $typeChange = $originalType !== $newType;
+        $moneyPlacingChange = $transaction->getOriginal('money_placing_id') !== $transaction->money_placing_id;
         // dd("bulan awalawads",$originalMonthName, "tahun awal",$originalYear, " || ", "bulan baru",$newMonthName, "tahun baru",$newYear, "apakah bulan atau tahun berubah?",$createdAtChange, "apakah kategori berubah?",$categoryChange, "apakah tipe berubah?",$createdAtChange);
         
         if ($originalType === 'pengeluaran' && $newType === 'pengeluaran') {
-            if ($categoryChange || $createdAtChange || $originalAmount !== $newAmount) {
+            if ($categoryChange || $createdAtChange || $amountChange) {
                 // Update monthly plan for original transaction 
-
                 $this->updateMonthlyPlanForOriginal($originalAmount, $originalCategoryId, $originalMonthName, $originalYear, 'subtract');
-
                 $this->updateMonthlyPlanForNew($newAmount, $newCategoryId, $newMonthName, $newYear, 'add');
 
+                
+                // update money placing if changed
+                if($moneyPlacingChange){
+                    $moneyPlacingLama = MoneyPlacingModel::where('id',$transaction->getOriginal('money_placing_id'));
+                    $moneyPlacingBaru = MoneyPlacingModel::where('id',$transaction->money_placing_id)->first();
+                    
+                    $moneyPlacingLama->increment('amount', $originalAmount);
+                    $moneyPlacingBaru->decrement('amount', $newAmount);
+
+                }
             } 
             // else if ( $originalAmount !== $newAmount) {
             //     $this->updateMonthlyPlanForOriginal($originalAmount - $newAmount, $newCategoryId, $newMonthName, $newYear, 'subtract');
             // }
         }else if($originalType === 'pengeluaran' && $newType === 'pemasukan'){
             $this->updateMonthlyPlanForOriginal($originalAmount, $originalCategoryId, $originalMonthName, $originalYear, 'subtract');
+            
+            // ubah money placing
             MoneyPlacingModel::where('id',$transaction->money_placing_id)
-                ->increment('amount', $newAmount);
+            ->increment('amount', $newAmount);
+            
         }else if($originalType === 'pemasukan' && $newType === 'pengeluaran'){
             $this->updateMonthlyPlanForNew($newAmount, $newCategoryId, $newMonthName, $newYear, 'add');
+            
+            // ubah money placing
             MoneyPlacingModel::where('id',$transaction->money_placing_id)
                 ->decrement('amount', $newAmount);
         
@@ -73,6 +91,10 @@ class TransactionObserver
      */
     public function deleted(transactionModel $transaction): void
     {
+        // bagian money placing sudah di handle di model transactionModel
+
+
+        // akan mempengaruhi monthly plan
         $this->updateMonthlyPlan($transaction, 'deleted');
     }
 
@@ -128,20 +150,21 @@ class TransactionObserver
     {
 
         if ($transaction->type === "pengeluaran") {
-
+            
             $monthNumber = Carbon::parse($transaction->created_at)->month;
             $monthName = Carbon::createFromFormat('m', $monthNumber)->locale('id')->translatedFormat('F');
             $year = Carbon::parse($transaction->created_at)->year;
-
+            
             $monthlyPlan = monthlyPlanModel::where('category_id', $transaction->categories_id) // <-- PERBAIKAN PENTING DI SINI
-                ->where('year', $year)
-                ->where('month', $monthName)
-                ->first();
-
+            ->where('year', $year)
+            ->where('month', $monthName)
+            ->first();
+            
             if ($monthlyPlan) {
                 if ($operation === 'created') {
                     $monthlyPlan->amount_now = $monthlyPlan->amount_now + $transaction->amount;
-                } elseif ($operation === 'deleted') {
+                } 
+                elseif ($operation === 'deleted') {
                     $monthlyPlan->amount_now -= $transaction->amount;
                     $monthlyPlan->amount_now = max(0, $monthlyPlan->amount_now);
                 }

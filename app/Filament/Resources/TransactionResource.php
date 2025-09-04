@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
+use App\Models\moneyPlacingModel;
 use App\Models\transactionModel as Transaction;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -27,7 +28,7 @@ class TransactionResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('user_id', auth()->id());
+            ->where('user_id', auth()->id())->orderBy('date','desc');    
     }
     public static function form(Form $form): Form
     {
@@ -44,7 +45,15 @@ class TransactionResource extends Resource
                 
                 Forms\Components\Select::make('money_placing_id')
                 ->label('Dari penempatan')
-                ->relationship('moneyPlacing','name'),
+                // ->relationship('moneyPlacing','name'),
+                ->options(function (){
+                    $option =[];
+                    $moneyPlacing = moneyPlacingModel::where('user_id',auth()->id())->get();
+                    foreach($moneyPlacing as $mp){
+                        $option[$mp->id] = $mp->name. ' (Rp '.number_format($mp->amount,0,',','.').')';
+                    }
+                    return $option;
+                }),
                 
                 Forms\Components\Select::make('categories_id')
                     ->label('Kategori')
@@ -68,7 +77,7 @@ class TransactionResource extends Resource
                 Forms\Components\DatePicker::make('date')
                     ->label('Tanggal')
                     ->required()
-                    ->default(Carbon::now())->disabled(),
+                    ->default(Carbon::now()),
 
                 Forms\Components\Textarea::make('note')
                     ->label('Catatan')
@@ -94,13 +103,16 @@ class TransactionResource extends Resource
             ->defaultSort('date', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
+                    ->label('Tipe')
                     ->options([
                         'pemasukan' => 'Pemasukan',
                         'pengeluaran' => 'Pengeluaran',
                     ]),
                 Tables\Filters\SelectFilter::make('money_placing_id')
+                    ->label('Alokasi Uang')
                     ->relationship('moneyPlacing', 'name'),
                 Tables\Filters\SelectFilter::make('categories_id')
+                    ->label('Kategori')
                     ->relationship('categories', 'name'),
                 Tables\Filters\SelectFilter::make('tahun')
                     ->label('Tahun')
@@ -136,8 +148,19 @@ class TransactionResource extends Resource
                     }),
                     
             ])->actions([
-                Tables\Actions\EditAction::make()->visible(fn($record)=> $record->type !== 'hutang' && $record->categories_id != 8 || $record->categories_id != 9  ),
-                Tables\Actions\DeleteAction::make()->visible(fn($record)=> $record->type !== 'hutang'  ),
+                
+                Tables\Actions\EditAction::make()->visible(function($record){
+                    return !(
+                        $record->type == 'hutang' 
+                        || in_array($record->categories_id, [8,9]) 
+                    );
+                }),
+                Tables\Actions\DeleteAction::make()->visible(function($record){
+                    return !(
+                        $record->type == 'hutang' 
+                        || in_array($record->categories_id, [8,9]) 
+                    );
+                }),
             ])->bulkActions([
                 
             ])

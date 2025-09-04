@@ -27,6 +27,7 @@ class debtRecord extends Model
     protected $casts = [
         'tanggal_hutang' => 'date',
         'tanggal_rencana_bayar' => 'date',
+        'amount' => 'float',
     ];
     public function user(){
         return $this->belongsTo(User::class, 'user_id', 'id');
