@@ -63,7 +63,15 @@ class TransactionObserver
                     $moneyPlacingBaru->decrement('amount', $newAmount);
 
                 }
-            } 
+            }
+            if($moneyPlacingChange){
+                $moneyPlacingLama = MoneyPlacingModel::where('id',$transaction->getOriginal('money_placing_id'));
+                $moneyPlacingBaru = MoneyPlacingModel::where('id',$transaction->money_placing_id)->first();
+                
+                $moneyPlacingLama->increment('amount', $originalAmount);
+                $moneyPlacingBaru->decrement('amount', $newAmount);
+
+            }
             // else if ( $originalAmount !== $newAmount) {
             //     $this->updateMonthlyPlanForOriginal($originalAmount - $newAmount, $newCategoryId, $newMonthName, $newYear, 'subtract');
             // }

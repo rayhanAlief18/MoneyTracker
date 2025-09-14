@@ -78,4 +78,6 @@ class User extends Authenticatable implements FilamentUser
     public function creditorRequest(){
         return $this->hasMany(debtRequestModel::class, 'creditor_user_id', 'id');
     }
+
+    
 }

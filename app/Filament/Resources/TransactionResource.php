@@ -6,6 +6,7 @@ use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
 use App\Models\moneyPlacingModel;
 use App\Models\transactionModel as Transaction;
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 class TransactionResource extends Resource
 {
@@ -98,7 +100,7 @@ class TransactionResource extends Resource
                 Tables\Columns\TextColumn::make('categories.name')->label('Kategori'),
                 Tables\Columns\TextColumn::make('amount')->money('IDR', true),
                 Tables\Columns\TextColumn::make('date')->label('Tanggal')->date(),
-                Tables\Columns\TextColumn::make('note')->label('Catatan')->limit(20),
+                // Tables\Columns\TextColumn::make('note')->label('Catatan')->limit(20),
             ])
             ->defaultSort('date', 'desc')
             ->filters([
@@ -144,23 +146,39 @@ class TransactionResource extends Resource
                         if (isset($data['value'])&& $data['value'] !== '') {
                             $query->whereMonth('date', intval($data['value']));
                         }
+                        // dd($data);
                         return $query;
                     }),
                     
             ])->actions([
                 
+                Action::make('note')
+                ->label('Note')
+                ->modalHeading('Deskripsi Cashflow')
+                ->icon('heroicon-o-information-circle')
+                ->modalContent(
+                    function(Model $record){
+                        return view('filament.pages.transaction-resource.modal-description-transaction',[
+                            'record'=>$record,
+                        ]);
+                    }
+                )->modalSubmitActionLabel('Tutup') // ganti label submit,
+                ->modalCancelAction(false), // hilangkan tombol cancel,
+
                 Tables\Actions\EditAction::make()->visible(function($record){
                     return !(
                         $record->type == 'hutang' 
-                        || in_array($record->categories_id, [8,9]) 
+                        || in_array($record->categories_id, [8,9,10,11]) 
                     );
                 }),
                 Tables\Actions\DeleteAction::make()->visible(function($record){
                     return !(
                         $record->type == 'hutang' 
-                        || in_array($record->categories_id, [8,9]) 
+                        || in_array($record->categories_id, [8,9,10,11]) 
                     );
                 }),
+
+                
             ])->bulkActions([
                 
             ])

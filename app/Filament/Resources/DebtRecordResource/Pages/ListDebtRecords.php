@@ -13,7 +13,9 @@ class ListDebtRecords extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->label('Buat Catatan Hutang')
+            ->icon('heroicon-o-plus'),
         ];
     }
 }

@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('debt_records', function (Blueprint $table) {
-            $table->bigInteger('money_placing_id');
-            $table->foreign('money_placing_id')
-                ->references('id')
-                ->on('money_placing')
-                ->onDelete('cascade')
-                ->after('tanggal_rencana_bayar'); // Assuming 'status' is the last column in the table
+        Schema::table('debt_request', function (Blueprint $table) {
+            $table->foreignId('money_placing_id')
+            ->references('id')->on('money_placing')
+            ->onDelete('cascade')
+            ->after('due_date');
         });
     }
 
@@ -26,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('debt_records', function (Blueprint $table) {
+        Schema::table('debt_request', function (Blueprint $table) {
             $table->dropForeign(['money_placing_id']);
             $table->dropColumn('money_placing_id');
         });

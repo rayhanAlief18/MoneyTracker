@@ -19,12 +19,20 @@ class debtRequestModel extends Model
         'due_date',
         'status',
         'id_debt',
+        'keterangan',
+        'jenis_hutang',
+        'money_placing_id'
+        
     ];
 
     protected $casts = [
         'debt_date' => 'date',
         'due_date' => 'date',
     ];
+    public function paymentDebtRequest()
+    {
+        return $this->hasMany(debtRequestPaymentModel::class, foreignKey:'debt_request_id',localKey:'id');
+    }
 
     //penghutang
     public function debtor(){
@@ -39,6 +47,7 @@ class debtRequestModel extends Model
     public function debtRecord(){
         return $this->belongsTo(DebtRecord::class, 'id_debt', 'id');
     }
+
 
 
 

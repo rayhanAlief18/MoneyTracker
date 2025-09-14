@@ -22,7 +22,7 @@ class MoneyPlacingResource extends Resource
     protected static ?string $navigationLabel = 'Alokasi Uang';
     protected static ?string $pluralModelLabel = 'Alokasi Uang';
     protected static ?string $navigationGroup = 'Money Trakcer';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()

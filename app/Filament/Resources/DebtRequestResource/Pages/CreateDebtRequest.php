@@ -9,4 +9,5 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateDebtRequest extends CreateRecord
 {
     protected static string $resource = DebtRequestResource::class;
+    protected static ?string $title = 'Buat Kontrak Hutang';
 }

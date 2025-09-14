@@ -18,42 +18,18 @@ class DebtObserver
     {
         Transaction::create([
             'user_id' => auth()->id(),
-            'type' => 'hutang',
+            'type' => 'pemasukan',
             'categories_id'=> 8, //hutang masuk,
             'amount' => $debtRecord->amount,
             'date' => Carbon::now(),
-            'note' => 'Penerimaan hutang dari '.$debtRecord->nama_pemberi_hutang.' sebesar Rp '.$debtRecord->amount,
+            'note' => 'Penerimaan hutang dari '.$debtRecord->nama_pemberi_hutang.' sebesar Rp '.$debtRecord->amount.' dengan keterangan '.$debtRecord->keterangan.'.',
             'money_placing_id' => $debtRecord->money_placing_id,
         ]);
+        
+        // tambah amount money placing tujuan
+        // MoneyPlacing::find($debtRecord->money_placing_id)->increment('amount', $debtRecord->amount);
 
-        if ($debtRecord->jenis_hutang === "Kontrak") {
-
-            $user = User::where('name',$debtRecord->nama_pemberi_hutang)->first();
-            // dd($user);
-            $data = debtRequestModel::create([
-                'debtor_user_id' => auth()->id(),
-                'debt_date'=>$debtRecord->tanggal_hutang,
-                'due_date'=>$debtRecord->tanggal_rencana_bayar,
-                'creditor_user_id' => $user->id,
-                'status' => 'pending',
-                'id_debt' => $debtRecord->id,
-            ]);
-
-            if ($data) {
-                Notification::make()
-                    ->title('Debt kontrak berhasil dibuat, tunggu konfirmasi dari pemberi hutang')
-                    ->success()
-                    ->send();
-            }
-        }
-
-        if ($debtRecord->jenis_hutang === "Kontrak") {
-            Notification::make()
-                ->title('Debt Request berhasil dibuat, uang hutang akan masuk ke alokasi yang dipilih')
-                ->success()
-                ->send();
-        }
-        MoneyPlacing::find($debtRecord->money_placing_id)->increment('amount', $debtRecord->amount);
+        
     }
 
     /**
@@ -61,7 +37,27 @@ class DebtObserver
      */
     public function updated(debtRecord $debtRecord): void
     {
-        //
+        $originalJumlahHutang = $debtRecord->getOriginal('amount');
+        $originalMoneyPlacing = $debtRecord->getOriginal('money_placing_id');
+        
+        $newJumlahHutang = $debtRecord->amount;
+        $newMoneyPlacing = $debtRecord->money_placing_id;
+        
+        $mountChange = $originalJumlahHutang !== $newJumlahHutang;
+        $moneyPlacingChange = $originalJumlahHutang !== $originalMoneyPlacing;
+
+        if($mountChange || $moneyPlacingChange)
+        {
+            MoneyPlacing::find($originalMoneyPlacing)->decrement('amount',$originalJumlahHutang);
+            $MoneyPlacingBaru = MoneyPlacing::find($newMoneyPlacing)->increment('amount',$newJumlahHutang);
+
+            Notification::make()
+                ->title('Alokasi keuangan telah diperbarui')
+                ->success()
+                ->send();
+        }
+
+
     }
 
     /**
@@ -69,7 +65,8 @@ class DebtObserver
      */
     public function deleted(debtRecord $debtRecord): void
     {
-        //
+        // kurangi money placing kalau hapus hutang
+        MoneyPlacing::find($debtRecord->money_placing_id)->decrement('amount',$debtRecord->amount);
     }
 
     /**

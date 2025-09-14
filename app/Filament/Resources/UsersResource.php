@@ -72,8 +72,13 @@ class UsersResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
+            ->emptyStateHeading('Belum ada User')
+            ->emptyStateDescription('Silakan tambahkan user untuk memulai.')
+            ->emptyStateIcon('heroicon-o-user-plus')
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                ->label('Tambah Pengguna')
+                ->icon('heroicon-o-plus'),
             ]);
     }
     
