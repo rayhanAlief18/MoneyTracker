@@ -9,11 +9,16 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
-
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 class MoneyPlacingResource extends Resource
 {
     protected static ?string $model = MoneyPlacing::class;
@@ -54,17 +59,24 @@ class MoneyPlacingResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')->label('Pengguna')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('name')->label('Nama Penempatan')->searchable(),
-                Tables\Columns\TextColumn::make('amount')->label('Saldo')->money('IDR', true)->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->label('Dibuat')->dateTime(),
+                Split::make([
+                    Stack::make([
+                        Tables\Columns\TextColumn::make('name')->label('Nama Penempatan')->searchable(),
+                        Tables\Columns\TextColumn::make('amount')->label('Saldo')->money('IDR', true)->sortable(),
+                    ]),
+                    Tables\Columns\TextColumn::make('created_at')->label('Dibuat')->dateTime(),
+                ]),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
                 Action::make('history')
                     ->label('History')
                     ->icon('heroicon-o-clock')

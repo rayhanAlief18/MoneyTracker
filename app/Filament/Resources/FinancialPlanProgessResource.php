@@ -10,11 +10,14 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\financialPlanProgressModel;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 class FinancialPlanProgessResource extends Resource
 {
     protected static ?string $model = FinancialPlanProgess::class;
@@ -26,9 +29,9 @@ class FinancialPlanProgessResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-        ->whereHas('financialPlan', function ($query) {
-            $query->where('user_id', auth()->id());
-        });
+            ->whereHas('financialPlan', function ($query) {
+                $query->where('user_id', auth()->id());
+            });
     }
 
     public static function form(Form $form): Form
@@ -37,14 +40,18 @@ class FinancialPlanProgessResource extends Resource
             ->schema([
                 Forms\Components\Select::make('id_financial_plan')
                     ->label('Rencana Keuangan')
-                    ->relationship('financialPlan', 'name',
-                    function (Builder $query) {
-                        $query->where('user_id', auth()->id());
-                    })
+                    ->relationship(
+                        'financialPlan',
+                        'description',
+                        function (Builder $query) {
+                            $query->where('user_id', auth()->id());
+                        }
+                    )
                     ->required(),
 
                 Forms\Components\TextInput::make('amount')
                     ->label('Jumlah Disetor')
+                    ->prefix('IDR')
                     ->numeric()
                     ->required()
                     ->live()
@@ -75,29 +82,39 @@ class FinancialPlanProgessResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('financialPlan.name')
-                    ->label('Rencana'),
+                Split::make([
+                    Tables\Columns\TextColumn::make('financialPlan.description')
+                        ->label('Rencana'),
+                    Stack::make([
 
-                Tables\Columns\TextColumn::make('amount')
-                    ->label('Jumlah')
-                    ->money('IDR', true),
+                        Tables\Columns\TextColumn::make('amount')
+                            ->label('Jumlah')
+                            ->money('IDR', true),
 
-                Tables\Columns\TextColumn::make('presentase_progress')
-                    ->label('Progres')
-                    ->suffix('%'),
+                        Tables\Columns\TextColumn::make('presentase_progress')
+                            ->label('Progres')
+                            ->prefix('+ ')
+                            ->suffix('%')
+                            ->color('success'),
 
-                Tables\Columns\TextColumn::make('date')
-                    ->label('Tanggal')
-                    ->date(),
+                    ]),
+                    Tables\Columns\TextColumn::make('date')
+                        ->label('Tanggal')
+                        ->date(),
+                ])
             ])
             // ->defaultSort('date', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('id_financial_plan')
-                    ->relationship('financialPlan', 'name')
+                    ->relationship('financialPlan', 'description')
                     ->label('Rencana Keuangan'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

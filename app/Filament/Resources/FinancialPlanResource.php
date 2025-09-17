@@ -14,15 +14,21 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Actions;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 class FinancialPlanResource extends Resource
 {
     protected static ?string $model = FinancialPlan::class;
-    
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Money Trakcer';
     protected static ?string $navigationLabel = 'Rencana Keuangan';
     // Tambahkan properti ini untuk mengubah judul halaman
-    protected static ?string $pluralModelLabel = 'Rencana Keuangan'; 
+    protected static ?string $pluralModelLabel = 'Rencana Keuangan';
     protected static ?string $breadcrumb = 'Rencana Keuangan';
 
     protected static ?int $navigationSort = 3;
@@ -40,24 +46,20 @@ class FinancialPlanResource extends Resource
                 Forms\Components\Hidden::make('user_id')
                     ->default(auth()->id()),
 
-                Forms\Components\TextInput::make('name')
-                    ->label('Nama Rencana')
-                    ->required(),
-
                 Forms\Components\Textarea::make('description')
-                    ->label('Deskripsi')
+                    ->label('Rencana')
                     ->rows(2),
 
                 Forms\Components\TextInput::make('target_amount')
                     ->label('Target Jumlah')
                     ->numeric()
-                    ->prefix('Rp')
+                    ->prefix('IDR')
                     ->dehydrated() // agar tetap dikirim ke backend
                     ->required(),
 
                 Forms\Components\TextInput::make('amount_now')
                     ->label('Jumlah Saat Ini')
-                    ->prefix('Rp')
+                    ->prefix('IDR')
                     ->dehydrated() // agar tetap dikirim ke backend
                     ->numeric()
                     ->default(0),
@@ -72,30 +74,39 @@ class FinancialPlanResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('Rencana'),
-                Tables\Columns\TextColumn::make('description')->limit(30),
-                Tables\Columns\TextColumn::make('target_amount')->money('IDR', true),
-                Tables\Columns\TextColumn::make('amount_now')->money('IDR', true),
-                Tables\Columns\TextColumn::make('progress_persen')
-                    ->label('Progress (%)')
-                    ->getStateUsing(function ($record) {
-                        if (!$record->target_amount || $record->target_amount == 0) {
-                            return '0%';
-                        }
+                Split::make([
+                    Stack::make([
+                        Tables\Columns\TextColumn::make('description')->limit(30),
+                        Tables\Columns\TextColumn::make('target_date')->date()->hidden(false),
+                    ]),
+                    Tables\Columns\TextColumn::make('target_amount')->prefix('Target: ')->money('IDR', true),
+                    Stack::make([
+                        Tables\Columns\TextColumn::make('amount_now')->money('IDR', true),
+                        Tables\Columns\TextColumn::make('progress_persen')
+                            ->label('Progress (%)')->prefix('Progress: ')
+                            ->getStateUsing(function ($record) {
+                                if (!$record->target_amount || $record->target_amount == 0) {
+                                    return '0%';
+                                }
 
-                        $percent = ($record->amount_now / $record->target_amount) * 100;
+                                $percent = ($record->amount_now / $record->target_amount) * 100;
 
-                        return number_format($percent, 2) . '%';
-                    }),
+                                return number_format($percent, 2) . '%';
+                            })->color(fn($record) => ($record->amount_now / $record->target_amount) * 100 < 99 ? 'warning' : 'sucess'),
 
-                Tables\Columns\TextColumn::make('target_date')->date(),
+                    ]),
+                ]),
             ])
             ->defaultSort('target_date', 'desc')
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

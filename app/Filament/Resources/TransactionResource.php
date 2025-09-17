@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
-use App\Filament\Resources\TransactionResource\RelationManagers;
 use App\Models\moneyPlacingModel;
 use App\Models\transactionModel as Transaction;
 use Filament\Tables\Actions\Action;
@@ -11,11 +10,16 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
@@ -96,11 +100,19 @@ class TransactionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('type')->label('Tipe')->sortable(),
-                Tables\Columns\TextColumn::make('categories.name')->label('Kategori'),
-                Tables\Columns\TextColumn::make('amount')->money('IDR', true),
-                Tables\Columns\TextColumn::make('date')->label('Tanggal')->date(),
-                // Tables\Columns\TextColumn::make('note')->label('Catatan')->limit(20),
+                Split::make([
+                    Stack::make([
+                        Tables\Columns\TextColumn::make('type')->label('Tipe')->searchable(),
+                        Tables\Columns\TextColumn::make('date')->label('Tanggal')->date(),
+                    ]),
+                    Stack::make([
+                        Tables\Columns\TextColumn::make('categories.name')->label('Kategori')->searchable(),
+                        Tables\Columns\TextColumn::make('amount')->money('IDR', true)
+                        ->color(fn($record)=> $record->type === 'pemasukan' ? 'success' : 'danger')
+                        ->prefix(fn($record)=> $record->type === 'pemasukan' ? '+ ' : '- ')
+                        ->searchable(),
+                    ]),
+                ])
             ])
             ->defaultSort('date', 'desc')
             ->filters([
@@ -112,7 +124,10 @@ class TransactionResource extends Resource
                     ]),
                 Tables\Filters\SelectFilter::make('money_placing_id')
                     ->label('Alokasi Uang')
-                    ->relationship('moneyPlacing', 'name'),
+                    ->options(function(){
+                        $option = moneyPlacingModel::where('user_id',auth()->id())->pluck('name','id');
+                        return $option;
+                    }),
                 Tables\Filters\SelectFilter::make('categories_id')
                     ->label('Kategori')
                     ->relationship('categories', 'name'),
@@ -146,7 +161,6 @@ class TransactionResource extends Resource
                         if (isset($data['value'])&& $data['value'] !== '') {
                             $query->whereMonth('date', intval($data['value']));
                         }
-                        // dd($data);
                         return $query;
                     }),
                     
@@ -164,19 +178,34 @@ class TransactionResource extends Resource
                     }
                 )->modalSubmitActionLabel('Tutup') // ganti label submit,
                 ->modalCancelAction(false), // hilangkan tombol cancel,
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make()->visible(function($record){
+                        return !(
+                            $record->type == 'hutang' 
+                            || in_array($record->categories_id, [8,9,10,11]) 
+                        );
+                    }),
+                    DeleteAction::make()->visible(function($record){
+                        return !(
+                            $record->type == 'hutang' 
+                            || in_array($record->categories_id, [8,9,10,11]) 
+                        );
+                    }),
+                ]),
 
-                Tables\Actions\EditAction::make()->visible(function($record){
-                    return !(
-                        $record->type == 'hutang' 
-                        || in_array($record->categories_id, [8,9,10,11]) 
-                    );
-                }),
-                Tables\Actions\DeleteAction::make()->visible(function($record){
-                    return !(
-                        $record->type == 'hutang' 
-                        || in_array($record->categories_id, [8,9,10,11]) 
-                    );
-                }),
+                // Tables\Actions\EditAction::make()->visible(function($record){
+                //     return !(
+                //         $record->type == 'hutang' 
+                //         || in_array($record->categories_id, [8,9,10,11]) 
+                //     );
+                // }),
+                // Tables\Actions\DeleteAction::make()->visible(function($record){
+                //     return !(
+                //         $record->type == 'hutang' 
+                //         || in_array($record->categories_id, [8,9,10,11]) 
+                //     );
+                // }),
 
                 
             ])->bulkActions([

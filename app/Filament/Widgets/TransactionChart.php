@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class TransactionChart extends ChartWidget
 {
     protected static ?string $heading = 'Pengeluaran bulan ini';
-    protected static ?int $sort = 2; // Atur urutan muncul (jika ada beberapa widget
+    protected static ?int $sort = 1; // Atur urutan muncul (jika ada beberapa widget
     protected function getData(): array
     {
         $userId = auth()->id();

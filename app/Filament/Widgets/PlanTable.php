@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Models\financialPlanModel as financialPlan;
 class PlanTable extends BaseWidget
 {
-    protected static ?int $sort = 1; // Atur urutan muncul (jika ada beberapa widget
+    protected static ?int $sort = 2; // Atur urutan muncul (jika ada beberapa widget
     // protected int|string|array $columnSpan = 1; // Biar penuh lebarnya
     protected static ?string $heading = 'Target Rencana Keuangan';
 
@@ -38,7 +38,7 @@ class PlanTable extends BaseWidget
     {
 
         return [
-            Tables\Columns\TextColumn::make('name')->label('Nama Rencana'),
+            Tables\Columns\TextColumn::make('description')->label('Nama Rencana'),
             Tables\Columns\TextColumn::make('target_amount')->label('Target')->money('IDR', true),
             Tables\Columns\TextColumn::make('amount_now')->label('Jumlah Sekarang')->money('IDR', true),
 

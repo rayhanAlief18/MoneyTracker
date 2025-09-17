@@ -13,7 +13,8 @@ class ListFinancialPlanProgesses extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('Masukan Progress Anda')
+            ->icon('heroicon-o-plus'),
         ];
     }
 }
