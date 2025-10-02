@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Models\financialPlanModel as financialPlan;
 class PlanTable extends BaseWidget
 {
-    protected static ?int $sort = 2; // Atur urutan muncul (jika ada beberapa widget
+    protected static ?int $sort = 3; // Atur urutan muncul (jika ada beberapa widget
     // protected int|string|array $columnSpan = 1; // Biar penuh lebarnya
     protected static ?string $heading = 'Target Rencana Keuangan';
 

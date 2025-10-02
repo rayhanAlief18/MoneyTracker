@@ -6,10 +6,10 @@ use App\Models\transactionModel as Transaction;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-class TransactionChart extends ChartWidget
+class IncomeTransactionChart extends ChartWidget
 {
     protected static ?string $heading = 'Pengeluaran bulan ini';
-    protected static ?int $sort = 1; // Atur urutan muncul (jika ada beberapa widget
+    protected static ?int $sort = 2; // Atur urutan muncul (jika ada beberapa widget
     protected function getData(): array
     {
         $userId = auth()->id();
@@ -31,17 +31,21 @@ class TransactionChart extends ChartWidget
         ->groupBy(DB::raw('DATE(created_at)'))
         ->pluck('total', 'date');
 
-        // $dataPemasukan = DB::table('transactions')
-        // ->where('user_id', auth()->id())
-        // ->where('type', 'pemasukan')
-        // ->whereBetween('created_at', [$startDate, $endDate])
-        // ->selectRaw('DATE(created_at) as date, SUM(amount) as total')
-        // ->groupBy(DB::raw('DATE(created_at)'))
-        // ->pluck('total', 'date');
+        $dataPemasukan = DB::table('transactions')
+        ->where('user_id', auth()->id())
+        ->where('type', 'pemasukan')
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->selectRaw('DATE(created_at) as date, SUM(amount) as total')
+        ->groupBy(DB::raw('DATE(created_at)'))
+        ->pluck('total', 'date');
 
         // Bangun data dengan default 0 jika tidak ada data
         $chartDataPengeluaran = $dates->map(function ($date) use ($dataPengeluaran) {
             return $dataPengeluaran[$date] ?? 0;
+        });
+
+        $chartDataPemasukan = $dates->map(function ($date) use ($dataPemasukan) {
+            return $dataPemasukan[$date] ?? 0;
         });
 
         // $chartDataPemasukan = $dates->map(function ($date) use ($dataPemasukan) {
@@ -55,14 +59,15 @@ class TransactionChart extends ChartWidget
                     'label' => 'Pengeluaran bulan ini',
                     'data' => $chartDataPengeluaran->toArray(),
                     'backgroundColor' => '#F59E0B', // biru
+
                     // 'borderColor' => '#F59E0B', // biru
                 ],
-                // [
-                //     'label' => 'Pemasukan bulan ini',
-                //     'data' => $chartDataPemasukan->toArray(),
-                //     'backgroundColor' => '#3B82F6', // biru
-                //     'borderColor' => '#3B82F6', // biru
-                // ]
+                [
+                    'label' => 'Pemasukan bulan ini',
+                    'data' => $chartDataPemasukan->toArray(),
+                    'backgroundColor' => '#3B82F6', // biru
+                    'borderColor' => '#3B82F6', // biru
+                ]
             ],
         ];
     }

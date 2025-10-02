@@ -20,6 +20,8 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Illuminate\Support\Str;
+use Filament\Forms\Components; // Import ini untuk mempermudah
 class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
@@ -40,14 +42,14 @@ class TransactionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('type')
-                    ->label('Tipe')
-                    ->options([
-                        'pemasukan' => 'Pemasukan',
-                        'pengeluaran' => 'Pengeluaran',
-                    ])
-                    ->live() // Supaya bisa reactive
-                    ->required(),
+                Forms\Components\FileUpload::make('foto_cashflow')
+                ->label('Isi otomatis dengan bukti foto cashflow')
+                ->image()
+                ->directory('cashflow-photos/'.auth()->user()->name.'-'.auth()->id())
+                ->getUploadedFileNameForStorageUsing(function ($file){
+                    $random = Str::uuid(16);
+                    return $random .'.' . $file->getClientOriginalExtension();
+                }),
                 
                 Forms\Components\Select::make('money_placing_id')
                 ->label('Dari penempatan')
@@ -60,9 +62,17 @@ class TransactionResource extends Resource
                     }
                     return $option;
                 }),
+                Forms\Components\Select::make('type')
+                    ->label('Tipe')
+                    ->options([
+                        'pemasukan' => 'Pemasukan',
+                        'pengeluaran' => 'Pengeluaran',
+                    ])
+                    ->live() // Supaya bisa reactive
+                    ->required(),
                 
                 Forms\Components\Select::make('categories_id')
-                    ->label('Kategori')
+                ->label('Kategori')
                     ->options(function ($get) {
                         $type = $get('type');
                         if ($type === 'pemasukan') {

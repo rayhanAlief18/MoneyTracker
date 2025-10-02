@@ -9,13 +9,14 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Carbon\Carbon;
 class DebtWidget extends BaseWidget
 {
-
+    protected static ?string $heading = 'Daftar Hutang';
+    protected static ?int $maxResults = 5;
     protected static ?int $sort = 3; // Atur urutan muncul (jika ada beberapa widget
     public function table(Table $table): Table
     {
         return $table
             ->query(
-                debtRecord::query()
+                debtRecord::where('user_id', auth()->id())->where('status', 'Belum bayar')->latest('created_at')
             )
             ->columns([
                 
@@ -23,16 +24,13 @@ class DebtWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Total Hutang')
                     ->money('IDR', true)
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('nama_pemberi_hutang')
                     ->label('Pemberi Hutang')
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('keterangan')
                     ->label('Keterangan')
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('jatuh_tempo')
                     ->label('Jatuh Tempo')
                     ->getStateUsing(function ($record) {

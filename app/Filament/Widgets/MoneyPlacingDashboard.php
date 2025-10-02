@@ -8,6 +8,7 @@ class MoneyPlacingDashboard extends Widget
 {
     protected static string $view = 'filament.widgets.money-placing-dashboard';
     protected static ?int $sort = 1; // Atur urutan muncul (jika ada beberapa widget)
+    protected int|string|array $columnSpan = 'full'; // Biar penuh lebarnya
 
     protected function getViewData(): array
     {
