@@ -55,7 +55,7 @@ class ListTransactions extends ListRecords
                         ->maxLength(255)
                         ->readOnly(true) // Biar tidak bisa diubah manual
                         ->required(),
-                    Forms\Components\TextArea::make('description')
+                    Forms\Components\Textarea::make('description')
                         ->label('Deskripsi Rencana')
                         ->required(),
                     Forms\Components\TextInput::make('max_amount')
