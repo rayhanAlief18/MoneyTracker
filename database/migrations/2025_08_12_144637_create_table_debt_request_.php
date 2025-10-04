@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignId('creditor_user_id')->constrained('users');
             $table->date('debt_date');
             $table->date('due_date');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }

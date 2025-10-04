@@ -12,12 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('debt_records', function (Blueprint $table) {
-            $table->bigInteger('money_placing_id');
-            $table->foreign('money_placing_id')
-                ->references('id')
-                ->on('money_placing')
-                ->onDelete('cascade')
-                ->after('tanggal_rencana_bayar'); // Assuming 'status' is the last column in the table
+            $table->foreignId('money_placing_id')->constrained('money_placing')->onDelete('cascade');
         });
     }
 
