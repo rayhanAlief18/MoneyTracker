@@ -4,14 +4,14 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use App\Models\MonthlyPlanModel; // Import model MonthlyPlanModel
+use App\Models\monthlyPlanModel; // Import model monthlyPlanModel
 use Carbon\Carbon; 
 class MonthlyPlan extends BaseWidget
 {
     protected int|string|array $columnSpan = 'full'; // Biar penuh lebarnya
     protected function getStats(): array
     {
-        $monthlyPlans = MonthlyPlanModel::where('user_id', auth()->id())
+        $monthlyPlans = monthlyPlanModel::where('user_id', auth()->id())
         ->where('year',Carbon::now()->year)
         ->where('month', Carbon::now()->locale('id')->translatedFormat('F'))
         ->get();

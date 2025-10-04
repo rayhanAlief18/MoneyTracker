@@ -4,7 +4,7 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use App\Models\MonthlyPlanModel as MonthlyPlan; // Import model MonthlyPlan
+use App\Models\monthlyPlanModel as MonthlyPlan; // Import model MonthlyPlan
 
 class MonthlyPlanStats extends BaseWidget
 {
