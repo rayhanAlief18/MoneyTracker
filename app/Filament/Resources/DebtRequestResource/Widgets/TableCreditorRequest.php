@@ -151,8 +151,8 @@ class TableCreditorRequest extends BaseWidget
                                     'user_id' => auth()->id(),
                                     'money_placing_id' => $moneyPlacing->id,
                                     'amount' => $record->amount,
-                                    'categories_id' => 9, //hutang keluar,
-                                    'type' => 'pengeluaran',
+                                    'categories_id' => 14, //hutang keluar,
+                                    'type' => 'hutang',
                                     'note' => 'Pemberian hutang kepada ' . $record->creditor->name . ' sebesar Rp ' . number_format($record->amount, 0, ',', '.'),
                                     'date' => Carbon::now(),
                                 ]);
@@ -172,8 +172,8 @@ class TableCreditorRequest extends BaseWidget
 
                                 Transaction::create([
                                     'user_id' => $record->debtor_user_id,
-                                    'type' => 'pemasukan',
-                                    'categories_id' => 8, //hutang masuk,
+                                    'type' => 'hutang',
+                                    'categories_id' => 11, //hutang masuk,
                                     'amount' => $record->amount,
                                     'date' => Carbon::now(),
                                     'note' => 'Penerimaan hutang dari ' . $record->debtor->name . ' sebesar Rp ' . number_format($record->amount, 0, ',', '.') . ' dengan catatan : ' . $record->keterangan,

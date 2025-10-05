@@ -178,8 +178,8 @@ class TableDebtorRequest extends BaseWidget
                                     'user_id' => $record->debtor_user_id,
                                     'money_placing_id' => $moneyPlacing->id,
                                     'amount' => $record->amount,
-                                    'categories_id' => 10, //bayar hutang
-                                    'type' => 'pengeluaran',
+                                    'categories_id' => 12, //bayar hutang
+                                    'type' => 'hutang',
                                     'note' => 'Pembayaran hutang kepada ' . $record->debtor->name . ' dengan rincian pembayaran = ' . number_format($record->amount , 0, ',', '.').' (hutang)'. (!empty($data['biaya_admin'])?'+'.number_format( intval($data['biaya_admin']) , 0, ',', '.').' (biaya admin)':'') . '. Dengan keterangan hutang '.$record->keterangan,
                                     'date' => Carbon::now(),
                                 ]);

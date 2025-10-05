@@ -18,7 +18,7 @@ class DebtObserver
     {
         Transaction::create([
             'user_id' => auth()->id(),
-            'type' => 'pemasukan',
+            'type' => 'hutang',
             'categories_id'=> 8, //hutang masuk,
             'amount' => $debtRecord->amount,
             'date' => Carbon::now(),

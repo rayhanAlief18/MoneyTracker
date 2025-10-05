@@ -131,6 +131,7 @@ class TransactionResource extends Resource
                     ->options([
                         'pemasukan' => 'Pemasukan',
                         'pengeluaran' => 'Pengeluaran',
+                        'hutang' => 'Hutang',
                     ]),
                 Tables\Filters\SelectFilter::make('money_placing_id')
                     ->label('Alokasi Uang')

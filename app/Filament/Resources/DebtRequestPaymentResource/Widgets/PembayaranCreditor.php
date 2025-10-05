@@ -102,11 +102,11 @@ class PembayaranCreditor extends BaseWidget
                     if ($moneyPlacing) {
                         // Pemasukan untuk penerima saldo hutang
                         Transaction::create([
-                            'user_id' => $record->debt_request->creditor_user_id,
+                            'user_id' => $record->debt_request->creditor_user_id, //
                             'money_placing_id' => $moneyPlacing->id,
                             'amount' => $record->debt_request->amount,
-                            'categories_id' => 11, //hutang dibayar oleh penghutang
-                            'type' => 'pemasukan',
+                            'categories_id' => 13, //hutang dibayar oleh penghutang
+                            'type' => 'hutang',
                             'note' => 'Hutang telah dibayar oleh ' . $record->debt_request->debtor->name . ' sebesar Rp '. number_format($record->amount , 0, ',', '.').'. Dengan keterangan hutang '.$record->keterangan,
                             'date' => Carbon::now(),
                         ]);
