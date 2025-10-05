@@ -3,24 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DebtRequestResource\Pages;
-use App\Filament\Resources\DebtRequestResource\RelationManagers;
-use App\Models\debtRecord;
 use App\Models\debtRequestModel as DebtRequest;
-use App\Models\MoneyPlacingModel as MoneyPlacing;
-use App\Models\transactionModel as Transaction;
+use App\Models\moneyPlacingModel as MoneyPlacing;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Hidden;
-use Filament\Infolists\Components\TextEntry;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Actions\Action;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\View\View;
 use Carbon\Carbon;
 
 class DebtRequestResource extends Resource

@@ -3,15 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DebtRequestPaymentResource\Pages;
-use App\Filament\Resources\DebtRequestPaymentResource\RelationManagers;
 use App\Models\debtRequestPaymentModel as DebtRequestPayment;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DebtRequestPaymentResource extends Resource
 {

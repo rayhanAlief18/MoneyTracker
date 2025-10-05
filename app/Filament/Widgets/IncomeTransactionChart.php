@@ -8,7 +8,19 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 class IncomeTransactionChart extends ChartWidget
 {
-    protected static ?string $heading = 'Pengeluaran bulan ini';
+    public function mount(): void
+    {
+        // Hitung total pengeluaran bulan ini
+        $totalPengeluaran = Transaction::where('user_id', auth()->id())
+            ->where('type', 'pengeluaran')
+            ->whereMonth('date', Carbon::now()->month)
+            ->whereYear('date', Carbon::now()->year)
+            ->sum('amount');
+
+        // Set heading dinamis
+        static::$heading = 'Pengeluaran bulan ini: Rp ' . number_format($totalPengeluaran, 0, ',', '.');
+    }
+
     protected static ?int $sort = 2; // Atur urutan muncul (jika ada beberapa widget
     protected function getData(): array
     {

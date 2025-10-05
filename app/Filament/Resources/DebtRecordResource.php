@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\DebtRecordResource\Pages;
 use App\Models\DebtRecord;
-use App\Models\MoneyPlacingModel as MoneyPlacing;
+use App\Models\moneyPlacingModel as MoneyPlacing;
 use Filament\Tables\Actions\Action;
 use App\Models\transactionModel as Transaction;
 use Carbon\Carbon;
