@@ -42,15 +42,6 @@ class TransactionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\FileUpload::make('foto_cashflow')
-                ->label('Isi otomatis dengan bukti foto cashflow')
-                ->image()
-                ->directory('cashflow-photos/'.auth()->user()->name.'-'.auth()->id())
-                ->getUploadedFileNameForStorageUsing(function ($file){
-                    $random = Str::uuid(16);
-                    return $random .'.' . $file->getClientOriginalExtension();
-                }),
-                
                 Forms\Components\Select::make('money_placing_id')
                 ->label('Dari penempatan')
                 // ->relationship('moneyPlacing','name'),
