@@ -23,7 +23,7 @@ class MoneyPlacingResource extends Resource
 {
     protected static ?string $model = MoneyPlacing::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-library';
     protected static ?string $navigationLabel = 'Alokasi Uang';
     protected static ?string $pluralModelLabel = 'Alokasi Uang';
     protected static ?string $navigationGroup = 'Money Trakcer';
@@ -51,6 +51,7 @@ class MoneyPlacingResource extends Resource
                     ->label('Jumlah Sekarang')
                     ->numeric()
                     ->prefix('Rp')
+                    ->minValue(0)
                     ->default(0),
             ]);
     }
@@ -77,18 +78,18 @@ class MoneyPlacingResource extends Resource
                     EditAction::make(),
                     DeleteAction::make(),
                 ]),
-                Action::make('history')
-                    ->label('History')
-                    ->icon('heroicon-o-clock')
-                    ->modalHeading('Riwayat Transaksi')
-                    ->modalSubmitActionLabel('Tutup') // ganti label submit
-                    ->modalCancelAction(false) // hilangkan tombol cancel
-                    ->action(fn () => null) // agar tombol tidak melakukan apapun
-                    ->modalContent(function ($record) {
-                        return view('filament.money-placing.history-modal', [
-                            'transactions' => $record->transaction()->latest()->get(),
-                        ]);
-                     }), // buka di tab baru (opsional)
+                // Action::make('history')
+                //     ->label('History')
+                //     ->icon('heroicon-o-clock')
+                //     ->modalHeading('Riwayat Transaksi')
+                //     ->modalSubmitActionLabel('Tutup') // ganti label submit
+                //     ->modalCancelAction(false) // hilangkan tombol cancel
+                //     ->action(fn () => null) // agar tombol tidak melakukan apapun
+                //     ->modalContent(function ($record) {
+                //         return view('filament.money-placing.history-modal', [
+                //             'transactions' => $record->transaction()->latest()->get(),
+                //         ]);
+                //      }), // buka di tab baru (opsional)
                 ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

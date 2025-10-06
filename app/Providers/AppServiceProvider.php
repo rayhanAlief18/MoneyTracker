@@ -9,6 +9,8 @@ use App\Observers\DebtRequestObserver;
 use App\Observers\TransactionObserver;
 use Illuminate\Support\ServiceProvider;
 use App\Models\transactionModel as Transaction;
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentColor;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,7 +19,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        FilamentColor::register([
+            'danger' => Color::Red,
+            'gray' => Color::Zinc,
+            'info' => Color::Blue,
+            'primary' => Color::Amber,
+            'success' => Color::Green,
+            'warning' => Color::Amber,
+        ]);
     }
 
     /**
@@ -28,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
         Transaction::observe(TransactionObserver::class);
         debtRecord::observe(DebtObserver::class);
         debtRequestModel::observe(DebtRequestObserver::class);
-        
-        
+
+
     }
 }

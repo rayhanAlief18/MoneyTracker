@@ -73,6 +73,7 @@ class DebtRecordResource extends Resource
                     ->label('Jumlah')
                     ->numeric()
                     ->prefix('Rp')
+                    ->minValue(0)
                     ->required(),
 
                 Forms\Components\Select::make('money_placing_id')
@@ -82,7 +83,7 @@ class DebtRecordResource extends Resource
                         $moneyPlacings = MoneyPlacing::where('user_id', $userId)->get();
                         $options = [];
                         foreach ($moneyPlacings as $placing) {
-                            $options[$placing->id] = $placing->name . ' (Rp ' . number_format($placing->amount, 0, ',', '.') . ')';
+                            $options[$placing->id] = $placing->name . ' (Rp.' . number_format($placing->amount, 0, ',', '.') . ')';
                         }
                         return $options;
                     })
@@ -164,7 +165,7 @@ class DebtRecordResource extends Resource
                                     $option = [];
                                     $moneyPlacing = MoneyPlacing::where('amount', '>=', $record->amount)->where('user_id',auth()->id())->get();
                                     foreach ($moneyPlacing as $mp) {
-                                        $option[$mp->id] = $mp->name;
+                                        $option[$mp->id] = $mp->name. "(Rp. ".number_format($mp->amount,0,',','.').")";
                                     }
                                     return $option;
 
@@ -207,7 +208,7 @@ class DebtRecordResource extends Resource
                                 Transaction::create([
                                     'user_id' => auth()->id(),
                                     'type' => 'pengeluaran',
-                                    'categories_id' => 9, //hutang keluar,
+                                    'categories_id' => 12, //hutang keluar,
                                     'amount' => $record->amount,
                                     'date' => Carbon::now(),
                                     'note' => 'Pembayaran hutang kepada ' . $record->nama_pemberi_hutang . ' (Rp ' . number_format($record->amount, 0, ',', '.') . ')',

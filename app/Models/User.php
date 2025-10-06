@@ -79,5 +79,7 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(debtRequestModel::class, 'creditor_user_id', 'id');
     }
 
-    
+    public function chat_to_admin(){
+        return $this->hasMany(chatToAdminModel::class,'user_id','id');
+    }
 }

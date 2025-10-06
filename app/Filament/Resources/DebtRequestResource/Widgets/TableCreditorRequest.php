@@ -109,9 +109,13 @@ class TableCreditorRequest extends BaseWidget
                                 Forms\Components\Select::make('money_placing_id')
                                     ->label('Pilih Alokasi Keuangan yang akan diambil')
                                     ->options(function () use ($record) {
-                                        return MoneyPlacing::where('user_id', auth()->id())
-                                            ->where('amount', '>=', $record->amount)
-                                            ->pluck('name', 'id');
+                                        $option=[];
+                                        $moneyPlacing = MoneyPlacing::where('amount', '>=', $record->amount)->where('user_id', auth()->id())->get();
+                                            // ->where('amount', '>=', $record->amount);
+                                        foreach($moneyPlacing as $mp){
+                                            $option[$mp->id] = $mp->name. "(Rp. ".number_format($mp->amount,0,',','.').")";
+                                        }
+                                        return $option;
                                     })
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, $set) use ($record) {
@@ -156,6 +160,8 @@ class TableCreditorRequest extends BaseWidget
                                     'note' => 'Pemberian hutang kepada ' . $record->creditor->name . ' sebesar Rp ' . number_format($record->amount, 0, ',', '.'),
                                     'date' => Carbon::now(),
                                 ]);
+                                //money placing sudah dikurangi melalui model
+                                MoneyPlacing::find($moneyPlacing->id)->decrement('amount', $record->amount);
 
 
                                 Notification::make()
@@ -179,9 +185,8 @@ class TableCreditorRequest extends BaseWidget
                                     'note' => 'Penerimaan hutang dari ' . $record->debtor->name . ' sebesar Rp ' . number_format($record->amount, 0, ',', '.') . ' dengan catatan : ' . $record->keterangan,
                                     'money_placing_id' => $record->money_placing_id,
                                 ]);
-
-
-                                //money placing sudah ditambahkan melalui model
+                                //money placing sudah ditambahkan
+                                MoneyPlacing::find($record->money_placing_id)->increment('amount', $record->amount);
                 
                                 if (auth()->id() === $record->debtor_user_id) {
                                     Notification::make()

@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('chat_to_admin', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->enum('role',['admin','user'])->default('user');
-            $table->string('job')->nullable();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->unsigned();
+            $table->string("pesan")->nullable();
+            $table->enum('status',['Belum Dibaca','Sudah Dibaca'])->default('Belum Dibaca');
+            $table->string('balasan')->nullable();
             $table->timestamps();
         });
-        
     }
 
     /**
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('chat_to_admin');
     }
 };

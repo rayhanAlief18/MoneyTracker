@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('jenis_hutang')->after('creditor_user_id');
             $table->string('keterangan')->after('jenis_hutang');
             $table->float('amount')->after('keterangan');
-            $table->enum('status', ['Pending', 'Diterima (Belum Bayar)', 'Ditolak', 'Lunas'])->default('Pending')->after('amount');
+            $table->enum('status', ['Pending', 'Diterima (Belum Bayar)', 'Ditolak', 'Lunas','Pembayaran Diajukan'])->default('Pending')->after('amount');
 
         });
     }

@@ -53,6 +53,7 @@ class FinancialPlanProgessResource extends Resource
                     ->label('Jumlah Disetor')
                     ->prefix('IDR')
                     ->numeric()
+                    ->minValue(0)
                     ->required()
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set, callable $get) {

@@ -19,7 +19,7 @@ class DebtObserver
         Transaction::create([
             'user_id' => auth()->id(),
             'type' => 'hutang',
-            'categories_id'=> 8, //hutang masuk,
+            'categories_id'=> 11, //hutang masuk,
             'amount' => $debtRecord->amount,
             'date' => Carbon::now(),
             'note' => 'Penerimaan hutang dari '.$debtRecord->nama_pemberi_hutang.' sebesar Rp '.$debtRecord->amount.' dengan keterangan '.$debtRecord->keterangan.'.',
@@ -27,7 +27,7 @@ class DebtObserver
         ]);
         
         // tambah amount money placing tujuan
-        // MoneyPlacing::find($debtRecord->money_placing_id)->increment('amount', $debtRecord->amount);
+        MoneyPlacing::find($debtRecord->money_placing_id)->increment('amount', $debtRecord->amount);
 
         
     }

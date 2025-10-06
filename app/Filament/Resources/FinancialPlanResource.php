@@ -24,7 +24,7 @@ class FinancialPlanResource extends Resource
 {
     protected static ?string $model = FinancialPlan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationGroup = 'Money Trakcer';
     protected static ?string $navigationLabel = 'Rencana Keuangan';
     // Tambahkan properti ini untuk mengubah judul halaman

@@ -7,6 +7,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\debtRequestModel;
 use App\Models\debtRequestPaymentModel as debtRequestPayment;
 use App\Models\moneyPlacingModel as MoneyPlacing;
 use App\Models\transactionModel as Transaction;
@@ -18,8 +19,8 @@ use Filament\Notifications\Notification;
 
 class PembayaranReqTable extends BaseWidget
 {
-        protected int|string|array $columnSpan = 'full'; // Biar penuh lebarnya
-        protected static ?string $heading = 'Rekap Penerimaan Pembayaran Hutang';
+    protected int|string|array $columnSpan = 'full'; // Biar penuh lebarnya
+    protected static ?string $heading = 'Rekap Penerimaan Pembayaran Hutang';
 
 
     public function table(Table $table): Table
@@ -33,7 +34,7 @@ class PembayaranReqTable extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('debt_request.debtor.name')
-                    ->label('Nama User')
+                    ->label('Nama Penghutang')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('status')
@@ -72,15 +73,20 @@ class PembayaranReqTable extends BaseWidget
                     ->modalHeading('Konfirmasi Pembayaran Hutang')
                     ->modalSubheading('Tindakan bagus, Lunasi hutangmu sekarang!')
                     ->modalWidth('md')
-                    ->visible(fn(Model $record):bool => $record->status === "Pembayaran Diajukan")
+                    ->visible(fn(Model $record): bool => $record->status === "Pembayaran Diajukan")
                     ->form(function ($record): array {
                         return [
 
                             Forms\Components\Select::make('money_placing_id')
                                 ->label('Pilih Alokasi Keuangan (saldo akan disimpan disini)')
                                 ->options(function () use ($record) {
-                                    return MoneyPlacing::where('user_id', auth()->id())
-                                        ->pluck('name', 'id');
+                                    $option = [];
+                                    $moneyPlacing = MoneyPlacing::where('user_id', auth()->id())->get();
+                                    // ->where('amount', '>=', $record->amount);
+                                    foreach ($moneyPlacing as $mp) {
+                                        $option[$mp->id] = $mp->name . "(Rp. " . number_format($mp->amount, 0, ',', '.') . ")";
+                                    }
+                                    return $option;
                                 })
                                 ->reactive()
                                 ->afterStateUpdated(function ($set, $state) use ($record) {
@@ -97,7 +103,7 @@ class PembayaranReqTable extends BaseWidget
                                 ->dehydrated(false),
 
                         ];
-                    })->action(function($data, $record){
+                    })->action(function ($data, $record) {
                         $moneyPlacing = MoneyPlacing::find($data['money_placing_id']);
                         if ($moneyPlacing) {
                             // Pemasukan untuk penerima saldo hutang
@@ -105,20 +111,24 @@ class PembayaranReqTable extends BaseWidget
                                 'user_id' => $record->debt_request->creditor_user_id,
                                 'money_placing_id' => $moneyPlacing->id,
                                 'amount' => $record->debt_request->amount,
-                                'categories_id' => 11, //hutang dibayar oleh penghutang
-                                'type' => 'pemasukan',
-                                'note' => 'Hutang telah dibayar oleh ' . $record->debt_request->debtor->name . ' sebesar Rp '. number_format($record->amount , 0, ',', '.').'. Dengan keterangan hutang '.$record->keterangan,
+                                'categories_id' => 13, //hutang dibayar oleh penghutang
+                                'type' => 'hutang',
+                                'note' => 'Hutang telah dibayar oleh ' . $record->debt_request->debtor->name . ' sebesar Rp ' . number_format($record->amount, 0, ',', '.') . '. Dengan keterangan hutang ' . $record->keterangan,
                                 'date' => Carbon::now(),
                             ]);
+                            $moneyPlacing->increment('amount', $record->debt_request->amount);
 
                             //penambahan penyimpanan saldo
                             $record->update([
                                 'status' => 'Lunas',
-                                'money_placing_save'=>$moneyPlacing->id,
-                                'receipt_date'=>Carbon::now(),
+                                'money_placing_save' => $moneyPlacing->id,
+                                'receipt_date' => Carbon::now(),
                             ]);
                             // Rekap data pengajuan pembayaran
-
+                            debtRequestModel::where('id', $record->debt_request_id)
+                                ->update([
+                                    'status' => 'Lunas',
+                                ]);
                             Notification::make()
                                 ->title('Pembayaran hutang berhasil diterima dan catatan pemasukan telah dibuat.')
                                 ->success()
@@ -129,24 +139,24 @@ class PembayaranReqTable extends BaseWidget
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('Bulan')
-                ->label('bulan')
-                ->options(function(){
-                    $bulan = DebtRequestPayment::query()
-                        ->selectRaw('DISTINCT MONTH(payment_date) as month_number')
-                        ->orderBy('month_number')
-                        ->pluck('month_number')
-                        ->mapWithKeys(function($month_number):array{
-                            return [
-                                $month_number => Carbon::createFromFormat('m',$month_number)->locale('ID')->translatedFormat('F')
-                            ];
-                        })->toArray();
-                    return $bulan;
-                })->query(function(Builder $query, array $data){
-                    if(isset($data['value']) && $data['value'] !==''){
-                        $query->whereMonth('payment_date', intval($data['value']));
-                    }
-                    return $query;
-                }),
+                    ->label('bulan')
+                    ->options(function () {
+                        $bulan = DebtRequestPayment::query()
+                            ->selectRaw('DISTINCT MONTH(payment_date) as month_number')
+                            ->orderBy('month_number')
+                            ->pluck('month_number')
+                            ->mapWithKeys(function ($month_number): array {
+                                return [
+                                    $month_number => Carbon::createFromFormat('m', $month_number)->locale('ID')->translatedFormat('F')
+                                ];
+                            })->toArray();
+                        return $bulan;
+                    })->query(function (Builder $query, array $data) {
+                        if (isset($data['value']) && $data['value'] !== '') {
+                            $query->whereMonth('payment_date', intval($data['value']));
+                        }
+                        return $query;
+                    }),
 
             ])
         ;

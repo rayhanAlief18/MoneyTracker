@@ -43,6 +43,7 @@ class DebtRequestResource extends Resource
                 Forms\Components\TextInput::make('amount')
                     ->label('Jumlah')
                     ->numeric()
+                    ->minValue(0)
                     ->prefix('Rp')
                     ->required(),
 
@@ -61,7 +62,15 @@ class DebtRequestResource extends Resource
 
                 Forms\Components\Select::make('money_placing_id')
                     ->label('Alokasi Uang (Uang hutang akan masuk alokasi ini)')
-                    ->options(fn($record) => MoneyPlacing::where('user_id', auth()->id())->pluck(column: 'name',key: 'id')),
+                    ->options(function($record){
+                        $option=[];
+                        $moneyPlacing = MoneyPlacing::where('user_id', auth()->id())->get();
+                            // ->where('amount', '>=', $record->amount);
+                        foreach($moneyPlacing as $mp){
+                            $option[$mp->id] = $mp->name. " (Rp. ".number_format($mp->amount,0,',','.').")";
+                        }
+                        return $option;
+                    }),
 
                 Forms\Components\TextInput::make('jenis_hutang')
                     ->label('Jenis Hutang')

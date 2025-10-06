@@ -30,7 +30,11 @@ class TableDebtorRequest extends BaseWidget
     {
         return $table
             ->query(
-                debtRequest::where('debtor_user_id', auth()->id())->orderBy('debt_date','desc')
+                debtRequest::where('debtor_user_id', auth()->id())
+                    ->where('status', '!=', 'Lunas')
+                    ->orderBy('debt_date', 'desc')
+                
+
             )
             ->columns([
                 Tables\Columns\TextColumn::make('creditor.name')
@@ -110,12 +114,12 @@ class TableDebtorRequest extends BaseWidget
                                     ->label('Apakah ada biaya admin transfer ?')
                                     ->reactive()
                                     ->options([
-                                        'Ya'=>'Ya',
-                                        'Tidak'=>'Tidak'
+                                        'Ya' => 'Ya',
+                                        'Tidak' => 'Tidak'
                                     ])
                                     ->descriptions([
-                                        'Ya'=>'Jika pembayaran anda terkena biaya admin.',
-                                        'Tidak'=>'Jika pembayaran anda tidak terkena biaya admin.'
+                                        'Ya' => 'Jika pembayaran anda terkena biaya admin.',
+                                        'Tidak' => 'Jika pembayaran anda tidak terkena biaya admin.'
                                     ])
                                     ->default('Tidak')
                                     ->afterStateUpdated(function (Forms\Get $get, $set, $state) use ($record) {
@@ -138,11 +142,19 @@ class TableDebtorRequest extends BaseWidget
                                     }),
 
                                 Forms\Components\Select::make('money_placing_id')
-                                    ->label('Pilih Alokasi Keuangan yang akan diambil')
+                                    ->label('Pilih Alokasi Keuangan yang akan diambilsss')
                                     ->options(function () use ($record) {
-                                        return MoneyPlacing::where('user_id', auth()->id())
-                                            ->where('amount', '>=', $record->amount)
-                                            ->pluck('name', 'id');
+                                        $option = [];
+                                        $moneyPlacing = MoneyPlacing::where('amount', '>=', $record->amount)->where('user_id', auth()->id())->get();
+                                        // ->where('amount', '>=', $record->amount);
+                                        foreach ($moneyPlacing as $mp) {
+                                            $option[$mp->id] = $mp->name . "(Rp. " . number_format($mp->amount, 0, ',', '.') . ")";
+                                        }
+                                        return $option;
+
+
+
+
                                     })
                                     ->reactive()
                                     ->afterStateUpdated(function (Forms\Get $get, $set, $state) use ($record) {
@@ -170,7 +182,7 @@ class TableDebtorRequest extends BaseWidget
                                 ,
 
                             ];
-                        })->action(function ($data, $record,) {
+                        })->action(function ($data, $record, ) {
                             $moneyPlacing = MoneyPlacing::find($data['money_placing_id']);
                             if ($moneyPlacing) {
                                 // Pembayaran debitor (penghutang) dan status menjadi Pembayaran diajukan
@@ -180,9 +192,11 @@ class TableDebtorRequest extends BaseWidget
                                     'amount' => $record->amount,
                                     'categories_id' => 12, //bayar hutang
                                     'type' => 'hutang',
-                                    'note' => 'Pembayaran hutang kepada ' . $record->debtor->name . ' dengan rincian pembayaran = ' . number_format($record->amount , 0, ',', '.').' (hutang)'. (!empty($data['biaya_admin'])?'+'.number_format( intval($data['biaya_admin']) , 0, ',', '.').' (biaya admin)':'') . '. Dengan keterangan hutang '.$record->keterangan,
+                                    'note' => 'Pembayaran hutang kepada ' . $record->debtor->name . ' dengan rincian pembayaran = ' . number_format($record->amount, 0, ',', '.') . ' (hutang)' . (!empty($data['biaya_admin']) ? '+' . number_format(intval($data['biaya_admin']), 0, ',', '.') . ' (biaya admin)' : '') . '. Dengan keterangan hutang ' . $record->keterangan,
                                     'date' => Carbon::now(),
                                 ]);
+                                //pengurangan money placing
+                                MoneyPlacing::find($moneyPlacing->id)->decrement('amount', $record->amount + (isset($data['biaya_admin']) ? intval($data['biaya_admin']) : 0));
 
                                 $record->update([
                                     'status' => 'Pembayaran Diajukan',
@@ -192,7 +206,7 @@ class TableDebtorRequest extends BaseWidget
                                     'debt_request_id' => $record->id,
                                     'status' => 'Pembayaran Diajukan',
                                     'bukti_bayar' => $data['bukti_bayar'],
-                                    'payment_date'=>Carbon::now(),
+                                    'payment_date' => Carbon::now(),
                                 ]);
 
 
