@@ -104,8 +104,8 @@ class MoneyPlacingResource extends Resource
                 ]),
             ])
             ->emptyStateHeading('Anda belum membuat "Alokasi uang"')
-            ->emptyStateDescription('Silakan tambahkan "Alokasi Uang" untuk memulai.')
-            ->emptyStateIcon('heroicon-o-user-plus')
+            ->emptyStateDescription('Alokasi uang adalah tempat anda menyimpan uang, misal cash, bank, dll')
+            ->emptyStateIcon('heroicon-o-building-library')
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()->label('Tambahkan Alokasi uang')
                     ->icon('heroicon-o-plus')

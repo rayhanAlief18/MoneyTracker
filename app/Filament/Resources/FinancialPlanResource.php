@@ -20,6 +20,8 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
+use Filament\Forms\Components\Hidden;
+
 class FinancialPlanResource extends Resource
 {
     protected static ?string $model = FinancialPlan::class;
@@ -107,7 +109,12 @@ class FinancialPlanResource extends Resource
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
-                    DeleteAction::make(),
+                    DeleteAction::make()
+                        ->label('Hapus Data') // ubah label tombol di tabel
+                        ->modalHeading('Mohon Dibaca Terlebih Dahulu !') // ubah judul modal
+                        ->modalDescription('Jika anda menghapus tabungan ini, maka seluruh data proses tabungan dengan nama tabungan yang sama akan dihapus juga')
+                        ->modalSubmitActionLabel('Ya, Hapus') // ubah teks tombol merah
+                        ->modalCancelActionLabel('Batal'), // ubah teks tombol cancel
                 ]),
             ])
             ->bulkActions([
@@ -116,7 +123,7 @@ class FinancialPlanResource extends Resource
                 ]),
             ])
             ->emptyStateHeading('Belum ada "Tabungan"')
-            ->emptyStateDescription('Silakan tambahkan "Tabungan" untuk memulai.')
+            ->emptyStateDescription('Tabungan adalah uang yang anda simpan sendiri dan tidak termasuk dalam "Alokasi Uang"')
             ->emptyStateIcon('heroicon-o-plus')
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()->label('Tambah Data Tabungan')

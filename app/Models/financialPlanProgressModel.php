@@ -16,6 +16,7 @@ class financialPlanProgressModel extends Model
         'amount',
         'presentase_progress',
         'date',
+        'money_placing_id'
     ];
     protected $casts = [
         'date' => 'datetime',

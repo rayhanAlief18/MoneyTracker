@@ -6,6 +6,7 @@ use App\Filament\Resources\FinancialPlanProgessResource\Pages;
 use App\Filament\Resources\FinancialPlanProgessResource\RelationManagers;
 use App\Models\financialPlanModel as FinancialPlan;
 use App\Models\financialPlanProgressModel as FinancialPlanProgess;
+use App\Models\moneyPlacingModel as MoneyPlacing;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -18,6 +19,8 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Forms\Components\Hidden;
+
 class FinancialPlanProgessResource extends Resource
 {
     protected static ?string $model = FinancialPlanProgess::class;
@@ -48,28 +51,29 @@ class FinancialPlanProgessResource extends Resource
                         }
                     )
                     ->required(),
+                    Forms\Components\Select::make('money_placing_id')
+                    ->label('Alokasi Uang (nominal akan berkurang dari alokasi yang dipilih)')
+                    ->options(function () {
+                        $userId = auth()->id();
+                        $moneyPlacings = MoneyPlacing::where('user_id', $userId)->get();
+                        $options = [];
+                        foreach ($moneyPlacings as $placing) {
+                            $options[$placing->id] = $placing->name . ' (Rp.' . number_format($placing->amount, 0, ',', '.') . ')';
+                        }
+                        return $options;
+                    })
+                    ->required(),
 
-                Forms\Components\TextInput::make('amount')
+                    Forms\Components\TextInput::make('amount')
                     ->label('Jumlah Disetor')
                     ->prefix('IDR')
                     ->numeric()
                     ->minValue(0)
                     ->required()
-                    ->live()
-                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                        $plan = financialPlan::find($get('id_financial_plan'));
-                        if ($plan && $plan->target_amount > 0) {
-                            $total = floatval($state);
-                            $progress = ($total / $plan->target_amount) * 100;
-                            $set('presentase_progress', number_format($progress, 2));
-                        }
-                    }),
+                    ,
 
-                Forms\Components\TextInput::make('presentase_progress')
-                    ->label('Presentase')
-                    ->numeric()
-                    ->disabled()
-                    ->dehydrated(), // tetap disimpan walaupun disabled
+                Hidden::make('presentase_progress')->default(0),
+
 
                 Forms\Components\DatePicker::make('date')
                     ->label('Tanggal')
@@ -123,7 +127,7 @@ class FinancialPlanProgessResource extends Resource
                 ]),
             ])
             ->emptyStateHeading('Belum ada "Progress Tabungan"')
-            ->emptyStateDescription('Silakan tambahkan "Progress Tabungan" untuk memulai.')
+            ->emptyStateDescription('Progress tabungan adalah rekap proses menabung dari menu "Tabungan"')
             ->emptyStateIcon('heroicon-o-plus')
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()->label('Tambah Data Progress Tabungan')

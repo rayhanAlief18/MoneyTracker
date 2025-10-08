@@ -251,7 +251,7 @@ class TransactionResource extends Resource
                 ])
 
             ->emptyStateHeading('Belum ada "Cashflow"')
-            ->emptyStateDescription('Silakan tambahkan "Cashflow" untuk memulai.')
+            ->emptyStateDescription('Cashflow adalah tempat aktivitas uang masuk dan keluar. Proses ini mempengaruhi jumlah "alokasi uang"')
             ->emptyStateIcon('heroicon-o-plus')
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()->label('Tambah Data Cashflow')

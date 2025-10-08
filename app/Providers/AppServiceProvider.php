@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Models\chatToAdminModel;
 use App\Models\debtRecord;
 use App\Models\debtRequestModel;
+use App\Models\financialPlanProgressModel;
 use App\Observers\ChatToAdminObserver;
 use App\Observers\DebtObserver;
 use App\Observers\DebtRequestObserver;
+use App\Observers\FinancialPlanProgressObserver;
 use App\Observers\TransactionObserver;
 use Illuminate\Support\ServiceProvider;
 use App\Models\transactionModel as Transaction;
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         Transaction::observe(TransactionObserver::class);
         debtRecord::observe(DebtObserver::class);
         debtRequestModel::observe(DebtRequestObserver::class);
+        financialPlanProgressModel::observe(FinancialPlanProgressObserver::class);
 
 
     }
