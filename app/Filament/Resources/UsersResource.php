@@ -43,11 +43,11 @@ class UsersResource extends Resource
                 ->password()
                 ->dehydrateStateUsing(fn ($state) => \Hash::make($state))
                 ->required(fn ($context) => $context === 'create')
-                ->label('Password'),
+                ->label('Password')->required(),
             Forms\Components\TextInput::make('password_confirmation')
                 ->password()
                 ->same('password')
-                ->label('Konfirmasi Password'),
+                ->label('Konfirmasi Password')->required(),
         ]);
     }
 
