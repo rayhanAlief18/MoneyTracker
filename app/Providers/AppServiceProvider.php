@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\chatToAdminModel;
 use App\Models\debtRecord;
 use App\Models\debtRequestModel;
+use App\Observers\ChatToAdminObserver;
 use App\Observers\DebtObserver;
 use App\Observers\DebtRequestObserver;
 use App\Observers\TransactionObserver;

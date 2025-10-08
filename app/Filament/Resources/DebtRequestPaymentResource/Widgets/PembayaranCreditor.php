@@ -154,6 +154,10 @@ class PembayaranCreditor extends BaseWidget
                     }),
 
             ])
+            ->emptyStateHeading('Belum ada data "Pembayaran Hutang"')
+            ->emptyStateDescription('Halaman ini menyimpan data rekap pembayaran pembayaran hutang.')
+            ->emptyStateIcon('heroicon-o-clipboard-document')
+
         ;
     }
 

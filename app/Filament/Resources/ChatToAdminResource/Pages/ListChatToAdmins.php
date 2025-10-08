@@ -14,7 +14,10 @@ class ListChatToAdmins extends ListRecords
     {
 
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+            ->label('Buat Pesan')
+            ->icon('heroicon-o-chat-bubble-left')
+            ->color('primary')
         ];
     }
 

@@ -1,9 +1,13 @@
 <x-filament::page>
     <div class="flex items-center justify-between mb-6">
-        <a href="{{ \App\Filament\Resources\ChatToAdminResource::getUrl('create') }}"
-            class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-700 transition">
-            + Tambah Baru
-        </a>
+
+        @if (auth()->user()->role === 'user')
+            <a href="{{ \App\Filament\Resources\ChatToAdminResource::getUrl('create') }}"
+                class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-700 transition">
+                Buat Pesan
+            </a>
+
+        @endif
     </div>
 
     {{-- Grid Card --}}
@@ -18,8 +22,13 @@
                     <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
                         <div>
                             <div
-                                class="{{ $chats['status'] === 'Belum Dibaca' ? 'text-gray-400' : 'text-white' }}text-sm font-medium">
-                                Chat {{ $loop->iteration }}</div>
+                                class="{{ $chats['status'] === 'Belum Dibaca' ? 'text-gray-400' : 'text-white' }} text-sm font-medium">
+                                {{ auth()->user()->role === 'admin'
+            ? 'Chat: ' . ($chats->user->name . ' ke-' . $chats->urutan ?? 'Unknown User')
+            : 'Chat: ' . $loop->iteration 
+                                            }}
+                            </div>
+
                             <div class="text-md mt-2 font-bold text-white">{{ $chats['pesan'] }}</div>
                         </div>
                         <div>
@@ -44,8 +53,8 @@
                                 </svg>
                             @elseif($chats['status'] === 'Sudah Dibaca')
                                 <svg :class="open ? 'rotate-180' : ''"
-                                    class="w-5 h-10 text-gray-400 transition-transform duration-300 " fill="none"
-                                    stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                                    class="w-5 h-10 text-gray-400 transition-transform duration-300 " fill="none" stroke="white"
+                                    stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             @endif
@@ -61,8 +70,14 @@
                         x-transition:leave-start="opacity-100 max-h-screen" x-transition:leave-end="opacity-0 max-h-0"
                         class="mt-4 overflow-hidden text-sm text-gray-300 pt-3">
                         <strong>Respon admin :</strong>
-                        <p>{{ $chats['balasan'] }}</p>
+                        <p class="mb-2">{{ $chats['balasan'] }}</p>
 
+                        @if (auth()->user()->role === 'admin' && $chats->status === 'Belum Dibaca')
+                            <x-filament::button tag="a" color="primary" size="sm"
+                                :href="\App\Filament\Resources\ChatToAdminResource::getUrl('edit', ['record' => $chats->id])">
+                                Balas
+                            </x-filament::button>
+                        @endif
                     </div>
                 </div>
         @endforeach

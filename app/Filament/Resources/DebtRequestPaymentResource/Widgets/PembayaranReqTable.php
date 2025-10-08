@@ -137,6 +137,7 @@ class PembayaranReqTable extends BaseWidget
                         }
                     })
             ])
+            
             ->filters([
                 Tables\Filters\SelectFilter::make('Bulan')
                     ->label('bulan')
@@ -159,6 +160,10 @@ class PembayaranReqTable extends BaseWidget
                     }),
 
             ])
+            ->emptyStateHeading('Belum ada data "Penerimaan Hutang"')
+            ->emptyStateDescription('Halaman ini menyimpan data rekap penerimaan pembayaran hutang.')
+            ->emptyStateIcon('heroicon-o-clipboard-document')
+
         ;
 
     }

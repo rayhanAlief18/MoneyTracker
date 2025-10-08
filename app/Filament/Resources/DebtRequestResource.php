@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Components\Hidden;
 use Filament\Resources\Resource;
 use Carbon\Carbon;
+use Filament\Tables\Table;
 
 class DebtRequestResource extends Resource
 {
@@ -70,7 +71,8 @@ class DebtRequestResource extends Resource
                             $option[$mp->id] = $mp->name. " (Rp. ".number_format($mp->amount,0,',','.').")";
                         }
                         return $option;
-                    }),
+                    })
+                    ->required(),
 
                 Forms\Components\TextInput::make('jenis_hutang')
                     ->label('Jenis Hutang')
@@ -85,6 +87,31 @@ class DebtRequestResource extends Resource
 
 
             ]);
+
+            
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                //
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                // Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
+            ])
+            ->emptyStateHeading('Belum ada data yang digunakan')
+            ->emptyStateDescription('Halaman ini menampung data hutang yang saya ajukan ke pengguna lain dan menampung data hutang pengguna lain yang diajukan ke saya.')
+            ->emptyStateIcon('heroicon-o-clipboard-document')
+            ;
     }
 
     public static function getRelations(): array

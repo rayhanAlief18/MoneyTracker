@@ -122,8 +122,14 @@ class FinancialPlanProgessResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
+            ->emptyStateHeading('Belum ada "Progress Tabungan"')
+            ->emptyStateDescription('Silakan tambahkan "Progress Tabungan" untuk memulai.')
+            ->emptyStateIcon('heroicon-o-plus')
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()->label('Tambah Data Progress Tabungan')
+                    ->
+                    icon('heroicon-o-plus')->
+                    color('primary'),
             ]);
     }
 

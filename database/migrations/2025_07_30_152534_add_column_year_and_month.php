@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('monthly_plan', function (Blueprint $table) {
             $table->integer('year')->after('amount_now')->nullable();
-            $table->integer('month')->after('year')->nullable();
+            $table->string('month')->after('year')->nullable();
         });
     }
 

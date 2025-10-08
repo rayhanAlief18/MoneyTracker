@@ -31,7 +31,7 @@ class FinancialPlanResource extends Resource
     protected static ?string $pluralModelLabel = 'Rencana Keuangan';
     protected static ?string $breadcrumb = 'Rencana Keuangan';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -48,7 +48,8 @@ class FinancialPlanResource extends Resource
 
                 Forms\Components\Textarea::make('description')
                     ->label('Rencana')
-                    ->rows(2),
+                    ->rows(2)
+                    ->required(),
 
                 Forms\Components\TextInput::make('target_amount')
                     ->label('Target Jumlah')
@@ -62,6 +63,7 @@ class FinancialPlanResource extends Resource
                     ->prefix('IDR')
                     ->dehydrated() // agar tetap dikirim ke backend
                     ->numeric()
+                    ->required()
                     ->default(0),
 
                 Forms\Components\DatePicker::make('target_date')
@@ -113,10 +115,14 @@ class FinancialPlanResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
+            ->emptyStateHeading('Belum ada "Tabungan"')
+            ->emptyStateDescription('Silakan tambahkan "Tabungan" untuk memulai.')
+            ->emptyStateIcon('heroicon-o-plus')
             ->emptyStateActions([
-                Tables\Actions\CreateAction::make()->label('Buat Rencana Keuangan')
-                    ->icon('heroicon-o-plus')
-                    ->color('primary'),
+                Tables\Actions\CreateAction::make()->label('Tambah Data Tabungan')
+                    ->
+                    icon('heroicon-o-plus')->
+                    color('primary'),
             ]);
     }
 

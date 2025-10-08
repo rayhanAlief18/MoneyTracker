@@ -81,6 +81,7 @@ class TransactionResource extends Resource
 
                 Forms\Components\Select::make('money_placing_id')
                     ->label('Dari penempatan')
+                    ->required()
                     ->reactive() // agar berubah ketika amount berubah
                     // ->relationship('moneyPlacing','name'),
                     ->options(function (Forms\Get $get) {
@@ -91,7 +92,7 @@ class TransactionResource extends Resource
                             foreach ($moneyPlacing as $mp) {
                                 $option[$mp->id] = $mp->name . ' (Rp ' . number_format($mp->amount, 0, ',', '.') . ')';
                             }
-                        }elseif($get('type') === 'pemasukan'){
+                        } elseif ($get('type') === 'pemasukan') {
                             $moneyPlacing = moneyPlacingModel::where('user_id', auth()->id())->get();
                             foreach ($moneyPlacing as $mp) {
                                 $option[$mp->id] = $mp->name . ' (Rp ' . number_format($mp->amount, 0, ',', '.') . ')';
@@ -101,7 +102,7 @@ class TransactionResource extends Resource
                     }),
 
                 Forms\Components\Textarea::make('note')
-                    ->label('Catatan')
+                    ->label('Catatan (Opsional)')
                     ->rows(2)
                     ->maxLength(255),
 
@@ -249,6 +250,9 @@ class TransactionResource extends Resource
 
                 ])
 
+            ->emptyStateHeading('Belum ada "Cashflow"')
+            ->emptyStateDescription('Silakan tambahkan "Cashflow" untuk memulai.')
+            ->emptyStateIcon('heroicon-o-plus')
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()->label('Tambah Data Cashflow')
                     ->

@@ -30,7 +30,9 @@ class ListTransactions extends ListRecords
                 ->icon('heroicon-o-chart-bar')
                 ->color('primary')
                 ->modalSubmitActionLabel('Save Plan')
-
+                ->modalHeading('Mohon Dibaca!')
+                ->modalDescription('Data yang sudah dibuat tidak bisa di edit. Pastikan semua data sudah benar sebelum menyimpan.')
+                ->modalWidth('md')
                 ->form([
                     Forms\Components\Select::make('category_id')
                         ->label('Kategori')
@@ -104,11 +106,13 @@ class ListTransactions extends ListRecords
 
                         
                     }catch (\Exception $e) {
-                        // Handle exception
+                        // // Handle exception
                         Notification::make()
                             ->title('Failed to create monthly plan: ' . $e->getMessage())
                             ->danger()
                             ->send();
+                        dd($e->getMessage());
+                    
                     }
 
                 }),

@@ -17,8 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class ChatToAdminResource extends Resource
 {
     protected static ?string $model = ChatToAdmin::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left';
+    protected static ?string $navigationLabel = 'Chat Admin';
 
 
     public static function form(Form $form): Form
@@ -27,10 +27,14 @@ class ChatToAdminResource extends Resource
             ->schema([
                 Forms\Components\Textarea::make('pesan')
                     ->label('Pesan / Kritik / Saran')
-                    ->required(),   
-                    
-                    Hidden::make('user_id')->default(auth()->id()),
-                    
+                    ->visible(fn ($record) => $record === null)
+                    ->required(),
+                
+                    Forms\Components\Textarea::make('balasan')
+                    ->label('Balas Pesan')
+                    ->visible(fn () => auth()->user()->role === 'admin')
+                    ->required(),
+                    Hidden::make('user_id')->default(auth()->id())->dehydrated(fn ($record) => $record === null),
             ]);
     }
 

@@ -27,7 +27,7 @@ class MoneyPlacingResource extends Resource
     protected static ?string $navigationLabel = 'Alokasi Uang';
     protected static ?string $pluralModelLabel = 'Alokasi Uang';
     protected static ?string $navigationGroup = 'Money Trakcer';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -40,7 +40,7 @@ class MoneyPlacingResource extends Resource
         return $form
             ->schema([
 
-                    Forms\Components\Hidden::make('user_id')
+                Forms\Components\Hidden::make('user_id')
                     ->default(auth()->id()),
 
                 Forms\Components\TextInput::make('name')
@@ -76,7 +76,12 @@ class MoneyPlacingResource extends Resource
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make(),
-                    DeleteAction::make(),
+                    DeleteAction::make()
+                        ->label('Hapus Data') // ubah label tombol di tabel
+                        ->modalHeading('Mohon Dibaca Terlebih Dahulu !') // ubah judul modal
+                        ->modalDescription('Jika anda menghapus alokasi ini, maka seluruh data cashflow dengan alokasi yang sama akan dihapus juga')
+                        ->modalSubmitActionLabel('Ya, Hapus') // ubah teks tombol merah
+                        ->modalCancelActionLabel('Batal'), // ubah teks tombol cancel
                 ]),
                 // Action::make('history')
                 //     ->label('History')
@@ -90,7 +95,7 @@ class MoneyPlacingResource extends Resource
                 //             'transactions' => $record->transaction()->latest()->get(),
                 //         ]);
                 //      }), // buka di tab baru (opsional)
-                ])
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
@@ -98,20 +103,23 @@ class MoneyPlacingResource extends Resource
                         ->successNotificationTitle('Data berhasil dihapus'),
                 ]),
             ])
+            ->emptyStateHeading('Anda belum membuat "Alokasi uang"')
+            ->emptyStateDescription('Silakan tambahkan "Alokasi Uang" untuk memulai.')
+            ->emptyStateIcon('heroicon-o-user-plus')
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()->label('Tambahkan Alokasi uang')
                     ->icon('heroicon-o-plus')
                     ->color('primary'),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -119,5 +127,5 @@ class MoneyPlacingResource extends Resource
             'create' => Pages\CreateMoneyPlacing::route('/create'),
             'edit' => Pages\EditMoneyPlacing::route('/{record}/edit'),
         ];
-    }    
+    }
 }

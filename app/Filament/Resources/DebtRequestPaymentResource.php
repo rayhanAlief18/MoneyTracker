@@ -44,12 +44,10 @@ class DebtRequestPaymentResource extends Resource
                 //     Tables\Actions\DeleteBulkAction::make(),
                 // ]),
             ])
-            ->emptyStateHeading('Belum ada Data Pembayaran')
-            ->emptyStateDescription('Halaman ini menampung data pembayaran hutang kontrak dan memindahkan saldo ke Alokasi uang yang anda pilih.')
+            ->emptyStateHeading('Belum ada data yang digunakan')
+            ->emptyStateDescription('Halaman ini menampung data pembayaran dan penerimaan hutang kontrak. Saldo penerimaan bisa dipindahkan ke Alokasi uang yang anda pilih.')
             ->emptyStateIcon('heroicon-o-clipboard-document')
-            ->emptyStateActions([
-                
-            ]);
+            ;
     }
 
     public static function getRelations(): array

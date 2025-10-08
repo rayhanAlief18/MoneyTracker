@@ -218,7 +218,9 @@ class TableDebtorRequest extends BaseWidget
                             }
 
                         })
-                ]);
+                ])->emptyStateHeading('Belum ada data hutang')
+                ->emptyStateDescription('Halaman ini menampung data hutang yang saya ajukan ke pengguna lain.')
+                ->emptyStateIcon('heroicon-o-clipboard-document');
 
 
     }

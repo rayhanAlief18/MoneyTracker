@@ -9,11 +9,13 @@ use Filament\Resources\Pages\EditRecord;
 class EditChatToAdmin extends EditRecord
 {
     protected static string $resource = ChatToAdminResource::class;
-
-    protected function getHeaderActions(): array
+    protected function mutateFormDataBeforeSave(array $data): array
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        // Jika admin yang menyimpan, ubah status jadi "Sudah Dibaca"
+        if (auth()->user()->role === 'admin') {
+            $data['status'] = 'Sudah Dibaca';
+        }
+
+        return $data;
     }
 }

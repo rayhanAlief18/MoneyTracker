@@ -219,6 +219,8 @@ class TableCreditorRequest extends BaseWidget
                                 ->success()
                                 ->send();
                         }),
-                ]);
+                ])->emptyStateHeading('Belum ada data hutang')
+                ->emptyStateDescription('Halaman ini menampung data hutang pengguna lain yang diajukan ke saya.')
+                ->emptyStateIcon('heroicon-o-clipboard-document');
     }
 }

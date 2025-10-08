@@ -11,6 +11,7 @@ class chatToAdminModel extends Model
     use HasFactory;
 
     protected $table = 'chat_to_admin';
+
     protected $fillable =[
         'user_id',
         'pesan',
