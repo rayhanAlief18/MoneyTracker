@@ -81,7 +81,7 @@ class ListTransactions extends ListRecords
                     try{
                         $dataAda = monthlyPlanModel::get();
 
-                        if($dataAda->where('name',$data['name'])->count() > 0) {
+                        if($dataAda->where('name',$data['name'])->count() > 0 && 'user_id' === auth()->id()) {
                             Notification::make()
                                 ->title('Rencana Bulan Sudah Ada')
                                 ->danger()

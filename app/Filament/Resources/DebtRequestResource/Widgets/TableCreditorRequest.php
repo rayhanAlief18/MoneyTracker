@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\DebtRequestResource\Widgets;
 
-use App\Models\DebtRequestModel as DebtRequest;
-use App\Models\MoneyPlacingModel as MoneyPlacing;
+use App\Models\debtRequestModel as DebtRequest;
+use App\Models\moneyPlacingModel as MoneyPlacing;
 use App\Models\transactionModel as Transaction;
 use Carbon\Carbon;
 use Filament\Tables;
